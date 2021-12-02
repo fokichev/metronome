@@ -8,17 +8,26 @@ class App extends React.Component {
   constructor(props){
     super(props);
     this.state = {
+      // metronome
       active: false,
       bpm: 120,
       perMeasure: 4,
+      currentBeat: 0,
+      // calculating BPM
+      bpmCounting: false,
+      times: [],
     };
   };
 
 
 // explanation for arrow notation instead of using bind: https://stackoverflow.com/questions/35287949/react-with-es7-uncaught-typeerror-cannot-read-property-state-of-undefined/35287996
   changeBpm = event => {
-    this.setState({bpm: event.target.value});
-    const {active, bpm} = this.state;
+    const bpm = event.target.value;
+    this.setState({
+      bpm: bpm,
+      currentBeat: 0,
+    });
+    const {active} = this.state;
     if(active){
       // stop current interval, start a new one
       clearInterval(this.interval);
@@ -33,7 +42,10 @@ class App extends React.Component {
     const {active, bpm} = this.state;
     if(active){
       clearInterval(this.interval);
-      this.setState({active: false});
+      this.setState({
+        active: false,
+        currentBeat: 0,
+      });
     }
     else{
       this.setState({active: true});
@@ -47,12 +59,41 @@ class App extends React.Component {
 
   playClick(){
     const click1 = new Audio(click_1);
-    click1.play();
-    console.log("hello");
+    const click2 = new Audio(click_2);
+    const {perMeasure, currentBeat} = this.state;
+    // if 1st beat of measure, play click1, otherwise click 2
+    if (currentBeat % perMeasure == 0) {
+      click1.play();
+    }
+    else{
+      click2.play();
+    }
+
+    // increment beat
+    this.setState({
+      currentBeat: currentBeat + 1,
+    });
+  }
+
+  setBpm(){
+    // get time
+    const date = new Date();
+    let time = date.getTime();
+    // append time to times array
+    const {times, perMeasure} = this.state;
+    // get last N number of elements where N is time signature
+    let newTimes = times;
+    newTimes.push(time);
+    newTimes = newTimes.slice((perMeasure - 1) * -1)
+    this.setState({times: newTimes});
+    alert(this.state.times);
+
+    // this.setState({times: newTimes});
+    // alert(this.state.times);
   }
 
   render(){
-    const {active, bpm} = this.state;
+    const {active, bpm, times} = this.state;
     return (
       <div className = "body">
         <div className = "bpm">
@@ -63,7 +104,7 @@ class App extends React.Component {
         </div>
         <div className = "buttons">
           <button id="play" onClick = {() => this.playPause()}>{active ? "pause" : "play"}</button>
-          <button id="setbpm">set bpm</button>
+          <button id="setbpm" onClick = {() => this.setBpm()}>set bpm</button>
         </div>
       </div>
     );
