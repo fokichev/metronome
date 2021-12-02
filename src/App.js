@@ -62,7 +62,7 @@ class App extends React.Component {
     const click2 = new Audio(click_2);
     const {perMeasure, currentBeat} = this.state;
     // if 1st beat of measure, play click1, otherwise click 2
-    if (currentBeat % perMeasure == 0) {
+    if (currentBeat % perMeasure === 0) {
       click1.play();
     }
     else{
@@ -78,19 +78,31 @@ class App extends React.Component {
   setBpm(){
     // get time
     const date = new Date();
-    let time = date.getTime();
+    const time = date.getTime();
     // append time to times array
     const {times, perMeasure} = this.state;
     // get last N number of elements where N is time signature
     let newTimes = times;
     newTimes.push(time);
-    newTimes = newTimes.slice((perMeasure - 1) * -1)
+    newTimes = newTimes.slice((perMeasure) * -1);
     this.setState({times: newTimes});
-    alert(this.state.times);
+    // alert(this.state.times);
 
     // this.setState({times: newTimes});
     // alert(this.state.times);
+    // setTimeout(this.checkTimeout(time), 2000);
+    setTimeout(() => this.checkTimeout(time), 2000);
   }
+
+  checkTimeout(time){
+    const {times} = this.state;
+    let lastTime = times.at(-1);
+    if(time === lastTime){
+      // alert("time out");
+      console.log(time + " " + lastTime);
+    }
+  }
+
 
   render(){
     const {active, bpm, times} = this.state;
@@ -105,6 +117,8 @@ class App extends React.Component {
         <div className = "buttons">
           <button id="play" onClick = {() => this.playPause()}>{active ? "pause" : "play"}</button>
           <button id="setbpm" onClick = {() => this.setBpm()}>set bpm</button>
+          <button id="setbpm" onClick = {() => alert(this.state.times)}>hello</button>
+          <p>{times}</p>
         </div>
       </div>
     );
