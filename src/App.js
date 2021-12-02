@@ -15,6 +15,13 @@ class App extends React.Component {
   };
 
 
+  changeBpm(e){
+    // const {bpm} = this.state;
+    // alert(e.target.value)
+    this.setState({bpm: e.target.value});
+    // alert(bpm)
+  }
+
   playPause(){
     const {active, bpm} = this.state;
     if(active){
@@ -44,7 +51,7 @@ class App extends React.Component {
         <div className = "bpm">
           <div>{bpm} BPM</div>
           <button>-</button>
-          <input type = "range" min = "40" max = "218" value = {bpm} />
+          <input type = "range" min = "40" max = "218" value = {bpm} onChange = {this.changeBpm.bind(this)}/>
           <button>+</button>
         </div>
         <div className = "buttons">
