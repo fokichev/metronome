@@ -10,11 +10,10 @@ class App extends React.Component {
     this.state = {
       // metronome
       active: false,
-      bpm: 120,
+      bpm: 140,
       perMeasure: 4,
       currentBeat: 0,
       // calculating BPM
-      bpmCounting: false,
       times: [],
     };
   };
@@ -58,14 +57,14 @@ class App extends React.Component {
 
 
   playClick(){
-    const click1 = new Audio(click_1);
-    const click2 = new Audio(click_2);
     const {perMeasure, currentBeat} = this.state;
     // if 1st beat of measure, play click1, otherwise click 2
     if (currentBeat % perMeasure === 0) {
+      const click1 = new Audio(click_1);
       click1.play();
     }
     else{
+      const click2 = new Audio(click_2);
       click2.play();
     }
 
@@ -76,6 +75,8 @@ class App extends React.Component {
   }
 
   setBpm(){
+    // play sound
+    this.playClick();
     // get time
     const date = new Date();
     const time = date.getTime();
@@ -97,7 +98,10 @@ class App extends React.Component {
       // 2 seconds passed = time out
       // change color of BPM back to black
       // reset times array
-      this.setState({times: []});
+      this.setState({
+        times: [],
+        currentBeat: 0,
+      });
 
     }
   }
@@ -111,9 +115,16 @@ class App extends React.Component {
         }
         let average = sumOfGaps/(times.length-1)
         let bpm = Math.round((1000/average)*60);
+        if(bpm > 250){bpm = 250;}
+        if(bpm < 35){bpm = 35;}
         this.setState({bpm: bpm});
-
       }
+    }
+
+    plusMinus(x){
+      const {bpm} = this.state;
+      let temp = bpm + x;
+      this.setState({bpm: temp});
     }
 
 
@@ -124,13 +135,13 @@ class App extends React.Component {
       <div className = "body">
         <div className = "bpm">
           <div>{bpm} BPM</div>
-          <button>-</button>
-          <input type = "range" min = "40" max = "218" value = {bpm} onChange = {this.changeBpm}/>
-          <button>+</button>
+          <button onClick = {() => this.plusMinus(-1)}>-</button>
+          <input type = "range" min = "35" max = "250" value = {bpm} onChange = {this.changeBpm}/>
+          <button onClick = {() => this.plusMinus(1)}>+</button>
         </div>
         <div className = "buttons">
           <button id="play" onClick = {() => this.playPause()}>{active ? "pause" : "play"}</button>
-          <button id="setbpm" onClick = {() => this.setBpm()}>set bpm</button>
+          <button id="setbpm" disabled={active} onClick = {() => this.setBpm()}>set bpm</button>
         </div>
       </div>
     );
