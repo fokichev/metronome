@@ -84,13 +84,9 @@ class App extends React.Component {
     // get last N number of elements where N is time signature
     let newTimes = times;
     newTimes.push(time);
-    newTimes = newTimes.slice((perMeasure) * -1);
+    newTimes = newTimes.slice((perMeasure*2) * -1);
     this.setState({times: newTimes});
-    // alert(this.state.times);
-
-    // this.setState({times: newTimes});
-    // alert(this.state.times);
-    // setTimeout(this.checkTimeout(time), 2000);
+    this.calculateBPM();
     setTimeout(() => this.checkTimeout(time), 2000);
   }
 
@@ -98,14 +94,32 @@ class App extends React.Component {
     const {times} = this.state;
     let lastTime = times.at(-1);
     if(time === lastTime){
-      // alert("time out");
-      console.log(time + " " + lastTime);
+      // 2 seconds passed = time out
+      // change color of BPM back to black
+      // reset times array
+      this.setState({times: []});
+
     }
   }
 
+    calculateBPM(){
+      const {times} = this.state;
+      if (times.length > 1){
+        let sumOfGaps = 0;
+        for (let i = 1; i < times.length; i++){
+          sumOfGaps = sumOfGaps + (times[i] - times[i-1]);
+        }
+        let average = sumOfGaps/(times.length-1)
+        let bpm = Math.round((1000/average)*60);
+        this.setState({bpm: bpm});
+
+      }
+    }
+
+
 
   render(){
-    const {active, bpm, times} = this.state;
+    const {active, bpm} = this.state;
     return (
       <div className = "body">
         <div className = "bpm">
@@ -117,8 +131,6 @@ class App extends React.Component {
         <div className = "buttons">
           <button id="play" onClick = {() => this.playPause()}>{active ? "pause" : "play"}</button>
           <button id="setbpm" onClick = {() => this.setBpm()}>set bpm</button>
-          <button id="setbpm" onClick = {() => alert(this.state.times)}>hello</button>
-          <p>{times}</p>
         </div>
       </div>
     );
