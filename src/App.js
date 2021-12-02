@@ -9,26 +9,24 @@ class App extends React.Component {
     super(props);
     this.state = {
       active: false,
-      bpm: 90,
+      bpm: 180,
       perMeasure: 4,
     };
-    this.click_1 = new Audio(click_1);
-    this.click_2 = new Audio(click_2);
   };
 
 
-  startClick(){
-    const {bpm} = this.state;
-    this.setState({
-      active: true,
-    });
-    // clearInterval()
-    setInterval(() => {
-      this.playClick();
-    }, ((60/bpm)*1000));
-  }
-
-  pauseClick(){
+  playPause(){
+    const {active, bpm} = this.state;
+    if(active){
+      clearInterval(this.interval)
+      this.setState({active: false});
+    }
+    else{
+      this.setState({active: true});
+      this.interval = setInterval(() => {
+        this.playClick();
+      }, ((60/bpm)*1000));
+    }
 
   }
 
@@ -36,12 +34,11 @@ class App extends React.Component {
   playClick(){
     const click1 = new Audio(click_1);
     click1.play();
-    // this.click_1.play();
     console.log("hello");
   }
 
   render(){
-    const {bpm} = this.state;
+    const {active, bpm} = this.state;
     return (
       <div className = "body">
         <div className = "bpm">
@@ -51,9 +48,8 @@ class App extends React.Component {
           <button>+</button>
         </div>
         <div className = "buttons">
-          <button id="play" onClick = {() => this.startClick()}>play</button>
+          <button id="play" onClick = {() => this.playPause()}>{active ? "pause" : "play"}</button>
           <button id="setbpm">set bpm</button>
-          <button id="pause">pause</button>
         </div>
       </div>
     );
