@@ -9,23 +9,30 @@ class App extends React.Component {
     super(props);
     this.state = {
       active: false,
-      bpm: 180,
+      bpm: 120,
       perMeasure: 4,
     };
   };
 
 
-  changeBpm(e){
-    // const {bpm} = this.state;
-    // alert(e.target.value)
-    this.setState({bpm: e.target.value});
-    // alert(bpm)
+// explanation for arrow notation instead of using bind: https://stackoverflow.com/questions/35287949/react-with-es7-uncaught-typeerror-cannot-read-property-state-of-undefined/35287996
+  changeBpm = event => {
+    this.setState({bpm: event.target.value});
+    const {active, bpm} = this.state;
+    if(active){
+      // stop current interval, start a new one
+      clearInterval(this.interval);
+      this.interval = setInterval(() => {
+        this.playClick();
+      }, ((60/bpm)*1000));
+    }
+
   }
 
   playPause(){
     const {active, bpm} = this.state;
     if(active){
-      clearInterval(this.interval)
+      clearInterval(this.interval);
       this.setState({active: false});
     }
     else{
@@ -51,7 +58,7 @@ class App extends React.Component {
         <div className = "bpm">
           <div>{bpm} BPM</div>
           <button>-</button>
-          <input type = "range" min = "40" max = "218" value = {bpm} onChange = {this.changeBpm.bind(this)}/>
+          <input type = "range" min = "40" max = "218" value = {bpm} onChange = {this.changeBpm}/>
           <button>+</button>
         </div>
         <div className = "buttons">
