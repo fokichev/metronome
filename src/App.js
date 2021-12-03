@@ -3,6 +3,12 @@ import './App.css';
 
 import click_1 from "./1_metronome.wav";
 import click_2 from "./2_metronome.wav";
+import playImg from "./buttons/play.svg";
+import pauseImg from "./buttons/pause.svg";
+import recordImg from "./buttons/record.svg";
+import recordDisabledImg from "./buttons/recordDisabled.svg";
+import minusImg from "./buttons/minus.svg";
+import plusImg from "./buttons/plus.svg";
 
 class App extends React.Component {
   constructor(props){
@@ -14,6 +20,7 @@ class App extends React.Component {
       perMeasure: 4,
       currentBeat: 0,
       // calculating BPM
+      calculating: false,
       times: [],
       measure: "",
     };
@@ -27,10 +34,32 @@ class App extends React.Component {
       bpm: bpm,
       currentBeat: 0,
     });
-    const {active} = this.state;
+    this.resetPlay();
+  }
+    selectChange = event => {
+      this.setState({perMeasure: event.target.value});
+      this.resetPlay();
+    }
+
+
+  playPause(){
+    const {active, bpm} = this.state;
+    // pause
     if(active){
-      // stop current interval, start a new one
       clearInterval(this.interval);
+      this.setState({
+        active: false,
+        currentBeat: 0,
+        measure: "",
+      });
+    }
+    // play
+    else{
+      this.setState({
+        active: true,
+        currentBeat: 0,
+        measure: "",
+      });
       this.interval = setInterval(() => {
         this.playClick();
       }, ((60/bpm)*1000));
@@ -38,53 +67,35 @@ class App extends React.Component {
 
   }
 
-  playPause(){
-    const {active, bpm} = this.state;
-    if(active){
-      clearInterval(this.interval);
-      this.setState({
-        active: false,
-        currentBeat: 0,
-      });
-    }
-    else{
-      this.setState({active: true});
-      this.interval = setInterval(() => {
-        this.showBeat();
-      }, ((60/bpm)*1000));
-    }
-
-  }
-
-  showBeat(){
-    this.playClick();
-  }
-
   playClick(){
     const {perMeasure, currentBeat, measure} = this.state;
     // if 1st beat of measure, play click1, otherwise click 2
+    let temp = "";
     if (currentBeat % perMeasure === 0) {
       const click1 = new Audio(click_1);
       click1.play();
       // if two measures displayed, reset measures
       if (currentBeat % (perMeasure*2) === 0) {
-        let temp = "★ ";
-        this.setState({measure: temp});
+        temp = "★ ";
       }
       else{
-        let temp = measure + "★ ";
-        this.setState({measure: temp});
+        temp = measure + "★ ";
       }
     }
     else{
       const click2 = new Audio(click_2);
       click2.play();
-      let temp = measure + "☆ ";
-      this.setState({measure: temp});
+      // if perMeasure is 0, limit to 20 characters
+      if (perMeasure == 0 && measure.length > 18){
+        temp = "☆ ";
+      }
+      else{
+        temp = measure + "☆ ";
+      }
     }
-
-    // increment beat
     this.setState({
+      measure: temp,
+      // increment beat
       currentBeat: currentBeat + 1,
     });
   }
@@ -102,22 +113,32 @@ class App extends React.Component {
     let newTimes = times;
     newTimes.push(time);
     newTimes = newTimes.slice((perMeasure*2) * -1);
-    this.setState({times: newTimes});
+    this.setState({
+      calculating: true,
+      times: newTimes,
+    });
     this.calculateBPM();
     setTimeout(() => this.checkTimeout(time), 2000);
   }
 
   checkTimeout(time){
-    const {times} = this.state;
+    const {active, times} = this.state;
     let lastTime = times.at(-1);
     if(time === lastTime){
       // 2 seconds passed = time out
       // change color of BPM back to black
       // reset times array
       this.setState({
+        calculating: false,
         times: [],
-        currentBeat: 0,
       });
+      // if active, don't need to reset beat and measure
+      if(!active){
+        this.setState({
+          currentBeat: 0,
+          measure: "",
+        });
+      }
 
     }
   }
@@ -139,27 +160,59 @@ class App extends React.Component {
 
     plusMinus(x){
       const {bpm} = this.state;
-      let temp = bpm + x;
+      let temp = parseInt(bpm) + x;
+      if(temp > 250){temp = 250;}
+      if(temp < 35){temp = 35;}
       this.setState({bpm: temp});
+      this.resetPlay();
+    }
+
+    resetPlay(){
+      const {active, bpm} = this.state;
+      if(active){
+        // stop current interval, start a new one
+        clearInterval(this.interval);
+        this.interval = setInterval(() => {
+          this.playClick();
+        }, ((60/bpm)*1000));
+      }
     }
 
 
-
   render(){
-    const {active, bpm, measure} = this.state;
+    const {active, bpm, perMeasure, calculating, measure} = this.state;
     return (
-      <div className = "body">
+      <div className = "metronome">
         <div className = "bpm">
-          <div>{bpm} BPM</div>
-          <button onClick = {() => this.plusMinus(-1)}>-</button>
-          <input type = "range" min = "35" max = "250" value = {bpm} onChange = {this.changeBpm}/>
-          <button onClick = {() => this.plusMinus(1)}>+</button>
+          <div><span className = {calculating ? "activeBPM" : null}>{bpm}</span> BPM</div>
+          <div className = "sliderContainer">
+            <input type="image" src={minusImg} className = "plusMinus" onClick = {() => this.plusMinus(-1)}/>
+            <input type = "range" min = "35" max = "250" className = "slider" value = {bpm} onChange = {this.changeBpm}/>
+            <input type="image" src={plusImg} className = "plusMinus" onClick = {() => this.plusMinus(1)}/>
+          </div>
         </div>
         <div className = "buttons">
-          <button id="play" onClick = {() => this.playPause()}>{active ? "pause" : "play"}</button>
-          <button id="setbpm" disabled={active} onClick = {() => this.setBpm()}>set bpm</button>
+          <input type="image" src={active ? pauseImg : playImg} className = "circleButton" onClick = {() => this.playPause()} alt={active ? "pause button" : "play button"}/>
+          <input type="image" src={active ? recordDisabledImg: recordImg} className = "circleButton" disabled={active} onClick = {() => this.setBpm()} alt="set BPM button"/>
         </div>
-        {measure}
+        <div className = "timeSignature">
+          Beats per measure: &nbsp;
+          <select className = "selectStyle" onChange = {this.selectChange} value = {perMeasure}>
+            <option value = "0">N/A</option>
+            <option value = "2">2</option>
+            <option value = "3">3</option>
+            <option value = "4">4</option>
+            <option value = "5">5</option>
+            <option value = "6">6</option>
+            <option value = "7">7</option>
+            <option value = "8">8</option>
+            <option value = "9">9</option>
+            <option value = "10">10</option>
+            <option value = "11">11</option>
+            <option value = "12">12</option>
+          </select>
+        </div>
+        <span className = "measure">{measure}</span>
       </div>
     );
   }
