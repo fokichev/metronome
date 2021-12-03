@@ -64,7 +64,7 @@ body{
   -webkit-appearance: none;
   width: 70%;
   height: 8px;
-  /* margin: 2em 0em; */
+  margin-bottom: 2em;
   border-radius: 5px;
   background: #999999;
   outline: none;

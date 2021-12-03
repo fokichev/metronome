@@ -33,13 +33,13 @@ class App extends React.Component {
     this.setState({
       bpm: bpm,
       currentBeat: 0,
-    });
+    }, this.resetPlay);
+  }
+
+  selectChange = event => {
+    this.setState({perMeasure: event.target.value});
     this.resetPlay();
   }
-    selectChange = event => {
-      this.setState({perMeasure: event.target.value});
-      this.resetPlay();
-    }
 
 
   playPause(){
