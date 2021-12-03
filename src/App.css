@@ -41,7 +41,6 @@ body{
 }
 
 .metronome{
-  /* margin: 2em 10em; */
   padding: 2em;
   background: rgba(255, 255, 255, 0.7);
   border-radius: 1em;
@@ -55,6 +54,7 @@ body{
   color: #679c5c;
 }
 
+/* slider styles */ 
 .slidecontainer {
   width: 100%;
   margin: 0 auto;
